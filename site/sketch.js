@@ -14,8 +14,66 @@ let sick_count = 0;
 let dead_count = 0;
 let recovered_count = 0;
 let healty_count = number_of_balls;
+let inputs = {
+  number_of_balls: {
+    defaultValue: 15,
+    label: "No of people:",
+    x: 20,
+    y: 5,
+    obj: null,
+  },
+  probabilty_of_sick: {
+    defaultValue: 30,
+    label: "Percentage of starting sick:",
+    x: 20,
+    y: 45,
+    obj: null,
+  },
+  probabilty_of_quar: {
+    defaultValue: 25,
+    label: "Percent of people quarantined:",
+    x: 20,
+    y: 85,
+    obj: null,
+  },
+  probaility_at_home: {
+    defaultValue: 75,
+    label: "Percent of people at home:",
+    x: 20,
+    y: 125,
+    obj: null,
+  },
+  time_to_death: {
+    defaultValue: 10000,
+    label: "Time to die in ms:",
+    x: 20,
+    y: 165,
+    obj: null,
+  },
+  recovery_probabilty: {
+    defaultValue: 80,
+    label: "Percent of recovery chances:",
+    x: 20,
+    y: 205,
+    obj: null,
+  },
+};
 
-function setup() {
+function setThings() {
+  number_of_balls = inputs["number_of_balls"].obj.value();
+  probabilty_of_sick = inputs["probabilty_of_sick"].obj.value();
+  probabilty_of_quar = inputs["probabilty_of_quar"].obj.value();
+  probaility_at_home = inputs["probaility_at_home"].obj.value();
+  time_to_death = inputs["time_to_death"].obj.value();
+  recovery_probabilty = inputs["recovery_probabilty"].obj.value();
+  balls = [];
+  RADIU = 20;
+  pause = false;
+  sick_count = 0;
+  dead_count = 0;
+  recovered_count = 0;
+  healty_count = number_of_balls;
+
   let placed_balls = 1;
   window_x = windowWidth - 200;
   window_y = windowHeight;
@@ -73,21 +131,37 @@ function setup() {
           false
         );
       }
-      //console.log("\tx :"+balls[placed_balls].position.x);
-      //console.log("\ty :"+balls[placed_balls].position.y);
-      //console.log("\tquar:"+quar);
-      //console.log("\tsick :"+sick);
       placed_balls++;
     } else {
-      //console.log("Tried x:"+x+" y:"+y+" hit ball:"+ball_hit);
     }
   }
+  // createCanvas(windowWidth, windowHeight);
+}
+
+function createInputs() {
+  for (let x in inputs) {
+    let labelText = createElement("h5", inputs[x].label);
+    labelText.style("color", "#ffffff");
+    labelText.position(inputs[x].x, inputs[x].y);
+    inputs[x].obj = createInput(inputs[x].defaultValue, "number");
+    inputs[x].obj.size(45);
+    inputs[x].obj.position(inputs[x].x, inputs[x].y + 40);
+  }
+}
+
+function setup() {
+  createInputs();
+  button = createButton("submit");
+  button.position(20, 285);
+  button.mousePressed(setThings);
+
+  //balls setup
   createCanvas(windowWidth, windowHeight);
 }
 
 function draw() {
   background(51);
-  
+
   for (let b in balls) {
     //console.log('--')
     //console.log(balls[b])
@@ -103,6 +177,8 @@ function draw() {
     }
   }
   textSize(25);
+  fill("white");
+  stroke("grey");
   text("Total: " + number_of_balls, window_x + 10, 30);
   text("Healthy: " + healty_count, window_x + 10, 60);
   text("Sick: " + sick_count, window_x + 10, 90);
@@ -144,7 +220,6 @@ class Ball {
     this.position.add(this.velocity);
     if (this.is_sick && !this.is_dead) {
       if (millis() - this.time_of_sickness > time_to_death) {
-        console.log("dead/recovered");
         this.is_dead = true;
         this.cannot_spread = true;
         dead_count++;
@@ -153,6 +228,8 @@ class Ball {
           dead_count--;
           healty_count++;
           this.is_recovered = true;
+        } else {
+          this.velocity.mult(0);
         }
         sick_count--;
       }
